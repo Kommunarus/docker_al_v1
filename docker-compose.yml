@@ -1,0 +1,22 @@
+version: '3'
+services:
+  ml_service:
+    restart: always
+    image: ml
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /home/neptun/PycharmProjects/datasets/:/datasets
+    ports:
+      - "5000:5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+networks:
+  default:
+    driver: bridge
