@@ -16,5 +16,5 @@ for file in val['data']:
         text_lab = text_lab + '{}\t{}\n'.format(file, 1)
 
 path_to_dataset_docker = '/home/neptun/PycharmProjects/datasets/ds_for_docker/labels'
-with open(os.path.join(path_to_dataset_docker, 'labels_mixture_500.txt'), 'w') as f:
+with open(os.path.join(path_to_dataset_docker, 'labels_margin_500.txt'), 'w') as f:
     f.write(text_lab)

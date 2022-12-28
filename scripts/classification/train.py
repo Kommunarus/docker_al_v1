@@ -283,7 +283,7 @@ def for_api(backbone, method, path_to_dataset_img, add,  path_to_txt_labels):
         print('mixture')
         max_epochs_str = method[7:]
         if max_epochs_str == '':
-            max_epochs = 10
+            max_epochs = 2
         else:
             max_epochs = int(max_epochs_str)
         add_to_label_items = get_mixture_samples(device, labeled_data, unlabeled_data,
