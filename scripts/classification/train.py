@@ -1,3 +1,4 @@
+import copy
 import os
 from torch.utils.data import DataLoader
 from scripts.classification.unit import NeuralNetwork, Dataset_from_list
@@ -12,6 +13,7 @@ from autoencoder.PyTorch_VAE.dataset import VAEDataset
 from sklearn.preprocessing import LabelEncoder
 from scripts.classification.siam import main as trainsiam
 from scripts.classification.siam_clusterisation import cluster
+from sklearn.metrics import f1_score
 
 class Feature:
     def __init__(self, device, backbone):
@@ -86,7 +88,8 @@ class Feature_vae:
         return self.model.loss_function(*args, **kwargs)
 
 
-def train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_to_dataset_img, n_in, backbone):
+def train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_to_dataset_img, n_in, backbone,
+                val=False, labeled_data_val=None, labeled_class_val=None, path_to_dataset_img_val=None):
 
     ds0 = Dataset_from_list(labeled_data, labeled_class, path_to_dataset_img, model_feacher_resnet, device, backbone)
     train_dataloader = DataLoader(ds0, batch_size=16, shuffle=True)
@@ -94,9 +97,16 @@ def train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_
     loss_func = nn.CrossEntropyLoss()
     model = NeuralNetwork(num_classes=len(set(labeled_class)), n_in=n_in).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    model.train()
-    for ep in range(1, 100):
+    bestf1 = 0
+    best_model = None
+    if val == True:
+        ds0_val = Dataset_from_list(labeled_data_val, labeled_class_val,
+                                path_to_dataset_img_val, model_feacher_resnet, device, backbone)
+        val_dataloader = DataLoader(ds0_val, batch_size=16, shuffle=False)
+
+    for ep in range(1, 50):
         for batch in train_dataloader:
+            model.train()
             fea = batch[0].to(device)
             labs = batch[1].to(device)
 
@@ -107,8 +117,28 @@ def train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_
             loss.backward()
             optimizer.step()
 
+        if val == True:
+            model.eval()
+            y_true = []
+            y_pred = []
 
-    return model
+            for batch in val_dataloader:
+                fea = batch[0].to(device)
+                labs = batch[1].to(device)
+                _, _, prob = model(fea)
+
+                y_true = y_true + labs.tolist()
+                pred = torch.argmax(prob, 1).tolist()
+                y_pred = y_pred + pred
+            acc = f1_score(y_true, y_pred, average='macro')
+            if bestf1 < acc:
+                bestf1 = acc
+                # print(ep, acc)
+                best_model = copy.deepcopy(model)
+        else:
+            best_model = model
+
+    return best_model
 
 def sampling_uncertainty(model, device, model_feacher, unlabeled_data, path_to_dir,
                          method='margin', num_sample=100,

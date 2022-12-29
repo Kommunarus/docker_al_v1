@@ -43,8 +43,8 @@ def create_file(N):
         f.write(text_lab)
 
 if __name__ == '__main__':
-    p = [2_000]
-    k = 6
+    p = [3_000, 4_000]
+    k = 2
     L = []
     for i in p:
         mean = 0

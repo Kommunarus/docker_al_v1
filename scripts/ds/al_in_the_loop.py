@@ -11,7 +11,7 @@ def al():
         'backbone': 'mobilenet',
         'path_to_labels': '/datasets/ds_for_docker/labels (копия)',
         'path_to_img': '/datasets/ds_for_docker/train',
-        'add': '1000',
+        'add': '100',
         'method': 'mixture2',
     }
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         for file in files_in_labels:
             os.remove(os.path.join(path_labl, file))
         create_file(1000)
-        for kk in range(2):
+        for kk in range(20):
             step = al()
             json_to_txt(step, kk)
         f = f1()

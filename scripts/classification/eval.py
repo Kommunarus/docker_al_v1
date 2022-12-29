@@ -5,7 +5,7 @@ from sklearn.metrics import f1_score
 from sklearn.preprocessing import LabelEncoder
 import os
 from scripts.classification.unit import NeuralNetwork, Dataset_from_list
-
+from collections import Counter
 
 def eval_model(model_feacher_resnet, model, labeled_data, labeled_class, device, path_to_dataset_img, n_in, backbone):
 
@@ -53,6 +53,8 @@ def calc_f1(backbone, path_to_dataset_img, path_to_txt_labels, path_to_dataset_i
     if 'numpy' in all_items:
         all_items.remove('numpy')
 
+    # print(Counter(labeled_class))
+
     dict_id = {}
     le = LabelEncoder()
     le.fit(labeled_class)
@@ -60,9 +62,6 @@ def calc_f1(backbone, path_to_dataset_img, path_to_txt_labels, path_to_dataset_i
 
     for k, v, v2 in zip(labeled_data, labeled_class, code_label):
         dict_id[k] = (v, v2)
-
-    model0 = train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_to_dataset_img,
-                         model_feacher_resnet.old_in, backbone)
 
     # val
     labeled_data_val = []
@@ -72,6 +71,12 @@ def calc_f1(backbone, path_to_dataset_img, path_to_txt_labels, path_to_dataset_i
             row_split = row.strip().split('\t')
             labeled_data_val.append(row_split[0])
             labeled_class_val.append(row_split[1])
+
+    model0 = train_model(model_feacher_resnet, labeled_data, labeled_class, device, path_to_dataset_img,
+                         model_feacher_resnet.old_in, backbone,
+                         val=True, labeled_data_val=labeled_data_val, labeled_class_val=labeled_class_val,
+                         path_to_dataset_img_val=path_to_dataset_img_val)
+
 
     all_items = os.listdir(path_to_dataset_img_val)
     if 'numpy' in all_items:
